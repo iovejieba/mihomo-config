@@ -98,7 +98,6 @@ experimental:
 proxy-groups:
   - {name: 节点选择, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/sub(1).png, type: select, proxies: [自动选择, 香港, 台湾, 日本, 新加坡, 美国, 其他, DIRECT]}
   - {name: 自动选择, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/lightning(2).png, <<: *fallback}
-  - {name: Speedtest, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/speedtest.png, type: select, proxies: [DIRECT, 节点选择, 香港, 台湾, 日本, 新加坡, 美国]}
   - {name: CloudFlare, icon: https://raw.ihtw.moe/raw.githubusercontent.com/Vbaethon/HOMOMIX/refs/heads/main/Icon/Color/CloudFlare.png, <<: *pr}
   - {name: Emby, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/emby.png, <<: *pr}
   - {name: AI, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/ChatGPT-green.png, <<: *pr}
@@ -142,7 +141,6 @@ rules:
   - RULE-SET,category-cngames,DIRECT
   - RULE-SET,win-update,DIRECT
   - RULE-SET,apple-cn,DIRECT
-  - RULE-SET,speedtest,Speedtest
   - RULE-SET,apple_proxy,Apple
   - RULE-SET,biliintl,节点选择
   - RULE-SET,tracker_ip,Tracker
