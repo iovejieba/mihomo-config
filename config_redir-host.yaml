@@ -165,8 +165,8 @@ rules:
   - RULE-SET,github,Github
   - RULE-SET,microsoft,Microsoft
   - RULE-SET,bahamut,台湾
-  - RULE-SET,cloudflare,CloudFlare
   - RULE-SET,emby,Emby
+  - RULE-SET,cloudflare,CloudFlare
   - RULE-SET,tmdb,TMDB
   - RULE-SET,dmm_ip,日本
   - RULE-SET,dmm_site,日本
