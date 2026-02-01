@@ -1,63 +1,52 @@
-# 策略组相关
+# ==========================================================
+# 锚点与策略模板
+# ==========================================================
 pr: &pr {type: select, proxies: [节点选择, 香港, 台湾, 日本, 新加坡, 美国, 其他, DIRECT]}
 url-test: &url-test {type: url-test, url: https://www.gstatic.com/generate_204, interval: 300, include-all-providers: true, exclude-filter: "LAN"}
 fallback: &fallback {type: fallback, url: https://www.gstatic.com/generate_204, interval: 300, include-all-providers: true, exclude-filter: "LAN"}
 load-balance: &load-balance {type: load-balance, url: https://www.gstatic.com/generate_204, interval: 300, include-all-providers: true, strategy: sticky-sessions, exclude-filter: "LAN"}
-# 这里是订阅更新和延迟测试相关的
 p: &p {type: http, interval: 86400, health-check: {enable: true, url: https://www.gstatic.com/generate_204, interval: 300}}
 
-proxies:
-  - {name: LAN, type: direct, udp: true, interface-name: br-lan}
-
-# https://hub.docker.com/r/xream/sub-store
-proxy-providers:
-  Sub-Store:
-    <<: *p
-    url: ""
-  Sub-Store2:
-    <<: *p
-    url: ""
-  Sub-Store3:
-    <<: *p
-    url: ""
-
+# ==========================================================
+# 基础配置
+# ==========================================================
 mixed-port: 7890
 ipv6: false
-log-level: silent
+log-level: info
 allow-lan: true
-skip-auth-prefixes:
-- 127.0.0.0/8
-- 172.16.0.0/12
-- 192.168.0.0/16
 unified-delay: true
 tcp-concurrent: true
-#external-ui: ui
-#external-ui-name: zashboard
 external-controller: 0.0.0.0:9090
 secret: ""
-#external-ui-url: https://raw.ihtw.moe/github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
-
 keep-alive-idle: 600
 keep-alive-interval: 60
 
+# ==========================================================
+# Geo数据设置
+# ==========================================================
+geodata-mode: true
+geodata-loader: standard
+geo-auto-update: true
+geo-update-interval: 24
+global-ua: clash.meta
+geox-url:
+  geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb"
+
 profile:
   store-selected: true
-  store-fake-ip: true
+  store-fake-ip: false
 
+# ==========================================================
+# 嗅探器 - 彻底关闭 (解决 CF 规则抢占域名分流的问题)
+# ==========================================================
 sniffer:
-  enable: true
-  sniff:
-    HTTP:
-      ports: [80, 8080-8880]
-      override-destination: true
-    TLS:
-      ports: [443, 8443]
-    QUIC:
-      ports: [443, 8443]
-  skip-domain:
-    - "Mijia Cloud"
-    - "+.push.apple.com"
+  enable: false
 
+# ==========================================================
+# TUN 模式与 DNS (纯正 redir-host)
+# ==========================================================
 tun:
   enable: true
   stack: mixed
@@ -73,8 +62,8 @@ dns:
   enhanced-mode: redir-host
   respect-rules: true
   nameserver:
-    - https://8.8.8.8/dns-query
-    - https://208.67.222.2/dns-query
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
   direct-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -82,7 +71,6 @@ dns:
     - system
     - 223.5.5.5
   nameserver-policy:
-    "*": 127.0.0.1#lo
     "+.lan": 127.0.0.1#lo
     "+.arpa": 127.0.0.1#lo
     "+.local": 127.0.0.1#lo
@@ -94,61 +82,73 @@ ntp:
   enable: true
   write-to-system: true
 
-experimental:
-  quic-go-disable-gso: false
-  quic-go-disable-ecn: false
+# ==========================================================
+# 代理与订阅
+# ==========================================================
+proxies:
+  - {name: LAN, type: direct, udp: true, interface-name: br-lan}
 
+proxy-providers:
+  Sub-Store:
+    <<: *p
+    url: "订阅地址"
+
+# ==========================================================
+# 策略组
+# ==========================================================
 proxy-groups:
-  - {name: 节点选择, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/sub(1).png, type: select, proxies: [自动选择, 香港, 台湾, 日本, 新加坡, 美国, 其他, DIRECT]}
-  - {name: 自动选择, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/lightning(2).png, <<: *fallback}
+  - {name: 节点选择, icon: https://ruleset.ihtw.moe/resources/icon/sub(1).png, type: select, proxies: [自动选择, 香港, 台湾, 日本, 新加坡, 美国, 其他, DIRECT]}
+  - {name: 自动选择, icon: https://ruleset.ihtw.moe/resources/icon/lightning(2).png, <<: *fallback}
+  - {name: Tracker, icon: https://ruleset.ihtw.moe/resources/icon/direct.png, type: select, proxies: [DIRECT, 香港, 台湾, 日本, 新加坡, 美国]}
   - {name: CloudFlare, icon: https://raw.ihtw.moe/raw.githubusercontent.com/Vbaethon/HOMOMIX/refs/heads/main/Icon/Color/CloudFlare.png, <<: *pr}
-  - {name: Emby, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/emby.png, <<: *pr}
-  - {name: AI, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/ChatGPT-green.png, <<: *pr}
-  - {name: Steam, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/steam.png, <<: *pr}
-  - {name: Apple, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/apple.png, type: select, proxies: [美国, 香港, 台湾, 日本, 新加坡, DIRECT]}
-  - {name: Github, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/github.png, <<: *pr}
-  - {name: Telegram, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/telegram(blue1).png, <<: *pr}
-  - {name: Google, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/google(1).png, <<: *pr}
-  - {name: YouTube, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/youtube.png, <<: *pr}
-  - {name: TikTok, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/tiktok.png, <<: *pr}
-  - {name: Netflix, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/netflix(red).png, <<: *pr}
-  - {name: Disney, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/disney(black).png, <<: *pr}
-  - {name: Tracker, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/direct.png, type: select, proxies: [DIRECT, 香港, 台湾, 日本, 新加坡, 美国]}
-  - {name: TMDB, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/TMDB.png, type: select, proxies: [DIRECT, 香港, 台湾, 日本, 新加坡, 美国]}
-  - {name: Porns, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/yuyanyun.png, <<: *pr}
-  - {name: Crypto, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/Bitcoin.png, <<: *pr}
-  - {name: Bilibili, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/bilibili(1).png, type: select, proxies: [DIRECT, 香港, 台湾]}
-  - {name: Microsoft, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/microsoft.png, <<: *pr}
-  - {name: ADBlock, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/ad(6).png, type: select, proxies: [REJECT, DIRECT]}
-  - {name: MATCH, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/shutiao.png, <<: *pr}
+  - {name: Emby, icon: https://ruleset.ihtw.moe/resources/icon/emby.png, <<: *pr}
+  - {name: Apple, icon: https://ruleset.ihtw.moe/resources/icon/apple.png, type: select, proxies: [美国, 香港, 台湾, 日本, 新加坡, DIRECT]}
+  - {name: Github, icon: https://ruleset.ihtw.moe/resources/icon/github.png, <<: *pr}
+  - {name: Telegram, icon: https://ruleset.ihtw.moe/resources/icon/telegram(blue1).png, <<: *pr}
+  - {name: Google, icon: https://ruleset.ihtw.moe/resources/icon/google(1).png, <<: *pr}
+  - {name: YouTube, icon: https://ruleset.ihtw.moe/resources/icon/youtube.png, <<: *pr}
+  - {name: TikTok, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/04ProxySoft/tiktok.png, <<: *pr}
+  - {name: Netflix, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/04ProxySoft/netflix(red).png, <<: *pr}
+  - {name: Disney, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/04ProxySoft/disney(black).png, <<: *pr}
+  - {name: TMDB, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/03CNSoft/TMDB.png, type: select, proxies: [DIRECT, 香港, 台湾, 日本, 新加坡, 美国]}
+  - {name: Porns, icon: https://ruleset.ihtw.moe/resources/icon/yuyanyun.png, <<: *pr}
+  - {name: Crypto, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/04ProxySoft/Bitcoin.png, <<: *pr}
+  - {name: Bilibili, icon: https://ruleset.ihtw.moe/resources/icon/bilibili(1).png, type: select, proxies: [DIRECT, 香港, 台湾]}
+  - {name: Microsoft, icon: https://ruleset.ihtw.moe/resources/icon/microsoft.png, <<: *pr}
+  - {name: AI, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/04ProxySoft/chatGPT-green.png, <<: *pr}
+  - {name: Steam, icon: https://raw.ihtw.moe/raw.githubusercontent.com/lige47/QuanX-icon-rule/refs/heads/main/icon/03CNSoft/steam.png, <<: *pr}
+  - {name: ADBlock, icon: https://ruleset.ihtw.moe/resources/icon/ad(6).png, type: select, proxies: [REJECT, DIRECT]}
+  - {name: MATCH, icon: https://ruleset.ihtw.moe/resources/icon/shutiao.png, <<: *pr}
 
-# 分隔,下面是地区分组
-  - {name: 香港, <<: *url-test, filter: "🇭🇰|香港|HK|Hong", icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/Hongkong(2).png}
-  - {name: 美国, <<: *url-test, filter: "🇺🇸|美国|US|United States", icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/US(1).png}
-  - {name: 新加坡, <<: *url-test, filter: "🇸🇬|新加坡|狮|SG|Singapore", icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/singapore(2).png}
-  - {name: 日本, <<: *url-test, filter: "🇯🇵|日本|东京|JP|Japan", icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/Japan(1).png}
-  - {name: 台湾, <<: *url-test, filter: "🇨🇳|🇹🇼|台湾|TW|Tai|Taiwan", icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/taiwan.png}
-  - {name: 低倍率, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/duck(1).png, <<: *fallback, filter: "(?i)(0\\.\\d+)"}
-  - {name: 其他, icon: https://git.ihtw.moe/JohnsonRan/QuanX-icon-rule/raw/main/icon/XXAI.png, type: select, include-all-providers: true, exclude-filter: "HK|US|SG|JP|TW|LAN"}
+  # 地区分组
+  - {name: 香港, <<: *url-test, filter: "🇭🇰|香港|HK|Hong", icon: https://ruleset.ihtw.moe/resources/icon/Hongkong(2).png}
+  - {name: 美国, <<: *url-test, filter: "🇺🇸|美国|US|United States", icon: https://ruleset.ihtw.moe/resources/icon/US(1).png}
+  - {name: 新加坡, <<: *url-test, filter: "🇸🇬|新加坡|狮|SG|Singapore", icon: https://ruleset.ihtw.moe/resources/icon/singapore(2).png}
+  - {name: 日本, <<: *url-test, filter: "🇯🇵|日本|东京|JP|Japan", icon: https://ruleset.ihtw.moe/resources/icon/Japan(1).png}
+  - {name: 台湾, <<: *url-test, filter: "🇨🇳|🇹🇼|台湾|TW|Tai|Taiwan", icon: https://ruleset.ihtw.moe/resources/icon/taiwan.png}
+  - {name: 低倍率, icon: https://ruleset.ihtw.moe/resources/icon/duck(1).png, <<: *fallback, filter: "(?i)(0\\.\\d+)"}
+  - {name: 其他, icon: https://ruleset.ihtw.moe/resources/icon/XXAI.png, type: select, include-all-providers: true, exclude-filter: "HK|US|SG|JP|TW|LAN"}
 
+# ==========================================================
+# 分流规则 (优先级优化版)
+# ==========================================================
 rules:
-  - DST-PORT,6881-6999,ADBlock #FUCK WPS
+  - DST-PORT,6881-6999,ADBlock # FUCK WPS
   - DST-PORT,8096-8097,Emby
   - DST-PORT,3478/19302,DIRECT
   - GEOIP,lan,LAN,no-resolve
+  
+  # 自定义与广告屏蔽
+  - RULE-SET,custom_direct,DIRECT
+  - RULE-SET,tracker_ip,Tracker
+  - RULE-SET,tracker_site,Tracker
   - RULE-SET,custom_proxy,节点选择
   - RULE-SET,custom_proxy1,节点选择
   - RULE-SET,custom_reject,ADBlock
-  - RULE-SET,custom_direct,DIRECT
   - RULE-SET,ADs_merged,ADBlock
   - RULE-SET,httpdns,ADBlock
-  - RULE-SET,category-cngames,DIRECT
-  - RULE-SET,win-update,DIRECT
-  - RULE-SET,apple-cn,DIRECT
-  - RULE-SET,apple_proxy,Apple
-  - RULE-SET,biliintl,节点选择
-  - RULE-SET,tracker_ip,Tracker
-  - RULE-SET,tracker_site,Tracker
+  
+  # 核心服务 (放在 CF 之前，防止被 CF 捕获)
   - RULE-SET,ai,AI
   - RULE-SET,crypto,Crypto
   - RULE-SET,youtube,YouTube
@@ -158,26 +158,40 @@ rules:
   - RULE-SET,disney,Disney
   - RULE-SET,google_site,Google
   - RULE-SET,google_ip,Google
-  - RULE-SET,category-porn,Porns
-  - RULE-SET,bilibili,Bilibili
   - RULE-SET,tg_site,Telegram
   - RULE-SET,tg_ip,Telegram
   - RULE-SET,github,Github
-  - RULE-SET,microsoft,Microsoft
+  
+  # 特定应用与地区
+  - RULE-SET,apple-cn,DIRECT
+  - RULE-SET,apple_proxy,Apple
+  - RULE-SET,biliintl,节点选择
+  - RULE-SET,bilibili,Bilibili
   - RULE-SET,bahamut,台湾
-  - RULE-SET,emby,Emby
-  - RULE-SET,cloudflare,CloudFlare
-  - RULE-SET,tmdb,TMDB
-  - RULE-SET,dmm_ip,日本
-  - RULE-SET,dmm_site,日本
   - RULE-SET,steamcn,DIRECT
   - RULE-SET,steam,Steam
+  - RULE-SET,tmdb,TMDB
+  - RULE-SET,emby,Emby
+  - RULE-SET,dmm_ip,日本
+  - RULE-SET,dmm_site,日本
+  - RULE-SET,win-update,DIRECT
+  - RULE-SET,category-cngames,DIRECT
+  - RULE-SET,category-porn,Porns
+  - RULE-SET,microsoft,Microsoft
+
+  # 兜底与泛匹配 (把容易误伤的 CF 放在 GFW 之后)
   - RULE-SET,gfwlist,节点选择
+  - RULE-SET,cloudflare,CloudFlare 
+  
+  # 国内直连
   - RULE-SET,cn_site,DIRECT
   - RULE-SET,chinadomains,DIRECT
   - RULE-SET,cn_ip,DIRECT
   - MATCH,MATCH
 
+# ==========================================================
+# 规则集提供者
+# ==========================================================
 rule-anchor:
   ip: &ip {type: http, interval: 86400, behavior: ipcidr, format: yaml}
   domain: &domain {type: http, interval: 86400, behavior: domain, format: yaml}
@@ -187,8 +201,6 @@ rule-anchor:
   mrs: &mrs {type: http, interval: 86400, behavior: domain, format: mrs}
   mrsip: &mrsip {type: http, interval: 86400, behavior: ipcidr, format: mrs}
 
-# https://wiki.metacubex.one/config/syntax/#_7
-# https://wiki.metacubex.one/config/rule-providers/content/#rule-providers
 rule-providers:
   custom_direct:
     <<: *domain
@@ -207,16 +219,16 @@ rule-providers:
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/Emby.list"
   custom_proxy1:
     <<: *classicaltxt
-    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/Custom_Proxy.list"
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/Custom_Proxys.list"
   ai:
     <<: *mrs
-    url: "https://git.ihtw.moe/JohnsonRan/CRules/raw/mihomo/rules/AIs_merged.mrs"
+    url: "https://ruleset.ihtw.moe/resources/rules/ai.mrs"
   ADs_merged:
     <<: *mrs
-    url: "https://git.ihtw.moe/JohnsonRan/CRules/raw/mihomo/rules/ADs_merged.mrs"
+    url: "https://ruleset.ihtw.moe/resources/rules/ADs_merged.mrs"
   biliintl:
     <<: *mrs
-    url: "https://git.ihtw.moe/JohnsonRan/meta-rules-dat/raw/meta/geo-lite/geosite/biliintl.mrs"
+    url: "https://ruleset.ihtw.moe/resources/rules/biliintl.mrs"
   tracker_ip:
     <<: *mrsip
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/main/latest/PrivateTracker_ipcidr.mrs"
@@ -228,7 +240,7 @@ rule-providers:
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/guaxiao.list"
   youtube:
     <<: *mrs
-    url: "https://git.ihtw.moe/JohnsonRan/meta-rules-dat/raw/meta/geo/geosite/youtube.mrs"
+    url: "https://ruleset.ihtw.moe/resources/rules/youtube.mrs"
   tiktok:
     <<: *mrs
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/main/latest/TikTok_domain.mrs"
@@ -295,7 +307,7 @@ rule-providers:
   httpdns:
     <<: *mrs 
     url: "https://git.ihtw.moe/JohnsonRan/meta-rules-dat/raw/meta/geo/geosite/category-httpdns-cn.mrs"
-  apple-cn:	
+  apple-cn: 
     <<: *mrs 
     url: "https://git.ihtw.moe/JohnsonRan/meta-rules-dat/raw/meta/geo/geosite/apple-cn.mrs"
   apple_proxy:
