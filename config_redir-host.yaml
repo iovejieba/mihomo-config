@@ -140,6 +140,8 @@ rules:
   
   # 自定义与广告屏蔽
   - RULE-SET,custom_direct,DIRECT
+  - RULE-SET,direct_site,DIRECT
+  - RULE-SET,direct_other,DIRECT
   - RULE-SET,tracker_ip,Tracker
   - RULE-SET,tracker_site,Tracker
   - RULE-SET,custom_proxy,节点选择
@@ -181,6 +183,8 @@ rules:
 
   # 兜底与泛匹配 (把容易误伤的 CF 放在 GFW 之后)
   - RULE-SET,gfwlist,节点选择
+  - RULE-SET,proxygfwlist_site,节点选择
+  - RULE-SET,proxygfwlist_ip,节点选择
   - RULE-SET,cloudflare,CloudFlare 
   
   # 国内直连
@@ -331,3 +335,15 @@ rule-providers:
   ecs-no-cn:
     <<: *domaintxt
     url: "https://git.ihtw.moe/JohnsonRan/CRules/raw/master/rules/ecs-no-cn.txt"
+  direct_site:
+    <<: *mrs
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/Direct_domain.mrs"
+  direct_other:
+    <<: *classicaltxt
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/Direct_other.txt"
+  proxygfwlist_site:
+    <<: *mrs
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/versioned_rules/2026-02-01-0/rules/ProxyGFWlist_domain.mrs"
+  proxygfwlist_ip:
+    <<: *mrsip
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/versioned_rules/2026-02-01-0/rules/ProxyGFWlist_ipcidr.mrs"
