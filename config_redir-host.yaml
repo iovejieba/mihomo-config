@@ -99,7 +99,16 @@ proxies:
 proxy-providers:
   Sub-Store:
     <<: *p
-    url: "订阅地址"
+    url: "订阅地址1"
+  Sub-Store2:
+    <<: *p
+    url: "订阅地址2"
+  Sub-Store3:
+    <<: *p
+    url: "订阅地址3"
+  Sub-Store4:
+    <<: *p
+    url: "订阅地址4"
 
 # ==========================================================
 # 策略组
@@ -148,10 +157,10 @@ rules:
   
   # 自定义与广告屏蔽
   - RULE-SET,custom_direct,DIRECT
-  - RULE-SET,direct_site,DIRECT
-  - RULE-SET,direct_other,DIRECT
   - RULE-SET,tracker_ip,Tracker
   - RULE-SET,tracker_site,Tracker
+  - RULE-SET,direct_site,DIRECT
+  - RULE-SET,direct_other,DIRECT
   - RULE-SET,custom_proxy,节点选择
   - RULE-SET,custom_proxy1,节点选择
   - RULE-SET,custom_reject,ADBlock
@@ -224,8 +233,8 @@ rule-providers:
     <<: *domaintxt
     url: "https://git.ihtw.moe/JohnsonRan/CRules/raw/master/rules/reject.txt"
   cloudflare:
-    <<: *classicaltxt
-    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/Cloudflare.list"
+    <<: *mrs
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/Cloudflare_domain.mrs"
   emby:
     <<: *classicaltxt
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/clash/refs/heads/main/Emby.list"
@@ -351,7 +360,7 @@ rule-providers:
     url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/Direct_other.txt"
   proxygfwlist_site:
     <<: *mrs
-    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/versioned_rules/2026-02-01-0/rules/ProxyGFWlist_domain.mrs"
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/ProxyGFWlist_domain.mrs"
   proxygfwlist_ip:
     <<: *mrsip
-    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/versioned_rules/2026-02-01-0/rules/ProxyGFWlist_ipcidr.mrs"
+    url: "https://raw.ihtw.moe/raw.githubusercontent.com/iovejieba/mihomo-mrs/refs/heads/main/latest/ProxyGFWlist_ipcidr.mrs"
